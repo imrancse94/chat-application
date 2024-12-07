@@ -26,23 +26,27 @@ const subscribeToChannel = async (channel) => {
                 if (message) {
                     const data = JSON.parse(message);
                     // console.log('payload',data);
-                    
-                    
-                    createMessage({
-                        room_id: data.room_id,
-                        messages: [
-                            {
-                                sender_id: data.sender_id,
-                                text: data.text,
-                                file: data?.file || null,
-                                timestamp: data.timestamp
-                            },
-                        ],
-                    }).then(result => {
-                        console.log('status of insert', result)
-                    }).catch(err => {
-                        console.log('error of insert', err)
-                    });
+                    const delay = 2
+
+                    const dbInsert = () => {
+                        createMessage({
+                            room_id: data.room_id,
+                            messages: [
+                                {
+                                    sender_id: data.sender_id,
+                                    text: data.text,
+                                    file: data?.file || null,
+                                    timestamp: data.timestamp
+                                },
+                            ],
+                        }).then(result => {
+                            console.log('status of insert', result)
+                        }).catch(err => {
+                            console.log('error of insert', err)
+                        });
+                    }
+
+                    setTimeout(dbInsert,1000 * delay)
 
                 }
                 break;
