@@ -4,6 +4,7 @@ const { FILE_UPLOAD_DIR, PUB_SUB_CHANNEL } = require("../utils/constant");
 const { messageSchema } = require("../utils/validations");
 const path = require('path')
 const fs = require('fs');
+const { publishMessage } = require("../utils/pubsub");
 
 
 const chatHistory = async (req, res) => {
@@ -140,13 +141,13 @@ const sendMessage = async (req, res) => {
 
         // Push message to Redis list
         // await pushCache(`messages:${room_id}`, JSON.stringify(message));
-        // await publishMessage(PUB_SUB_CHANNEL,JSON.stringify(message))
+        await publishMessage(PUB_SUB_CHANNEL,JSON.stringify(message))
 
 
         const io = getSocketIO();
         // Emit the message to connected users via Socket.IO
         if(io){
-            io.to(room_id).emit('message', message);
+            io.emit('message', message);
         }
         
 
