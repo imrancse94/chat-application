@@ -97,8 +97,7 @@ jobs:
 
       - name: Add environment variables to .env
         run: |
-          echo WEBSITE_IMAGE=${{ env.WEBSITE_IMAGE }} >> .env
-          echo NGINX_IMAGE=${{ env.NGINX_IMAGE }} >> .env
+          echo WEBSITE_IMAGE=${{ env.BACKEND_IMAGE }} >> .env
           echo NAMESPACE=${{ secrets.NAMESPACE }} >> .env
           echo PERSONAL_ACCESS_TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }} >> .env
 
