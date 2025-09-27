@@ -1,0 +1,131 @@
+name: Continuous Integration and Delivery
+
+on:
+  push:
+    branches: [main]
+
+env:
+  #
+  BACKEND_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/chat-application-backend:latest
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  JWT_SECRET: secret@!
+  PORT: 8000
+  JWT_ACCESS_EXPIRATION: 15m
+  JWT_REFRESH_EXPIRATION: 7d
+  JWT_REFRESH_SECRET: scret222!!
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: Build the Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout main
+        uses: actions/checkout@v3
+
+      - name: Set environment variables to .env
+        run: |
+          echo "BACKEND_IMAGE=$(echo ${{env.BACKEND_IMAGE}} )" >> $GITHUB_ENV
+          echo "REDIS_HOST=$(echo ${{env.REDIS_HOST}} )" >> $GITHUB_ENV
+          echo "REDIS_PORT=$(echo ${{env.REDIS_PORT}} )" >> $GITHUB_ENV
+          echo "JWT_SECRET=$(echo ${{env.JWT_SECRET}} )" >> $GITHUB_ENV
+          echo "PORT=$(echo ${{env.PORT}} )" >> $GITHUB_ENV
+          echo "JWT_ACCESS_EXPIRATION=$(echo ${{env.JWT_ACCESS_EXPIRATION}} )" >> $GITHUB_ENV
+          echo "JWT_REFRESH_EXPIRATION=$(echo ${{env.JWT_REFRESH_EXPIRATION}} )" >> $GITHUB_ENV
+          echo "JWT_REFRESH_SECRET=$(echo ${{env.JWT_REFRESH_SECRET}} )" >> $GITHUB_ENV
+
+      - name: Log in to GitHub Packages
+        env:
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: echo ${PERSONAL_ACCESS_TOKEN} | docker login ghcr.io -u ${{ secrets.NAMESPACE }} --password-stdin
+
+      - name: Pull images
+        run: |
+          docker pull ${{ env.BACKEND_IMAGE }} || true
+
+      - name: Build images
+        id: build-images
+        run: |
+          docker compose -f docker-compose.ci.yml build --no-cache 2>error >&1
+
+      - name: create an issue
+        if: ${{ failure() }}
+        run: |
+          echo $(cat error)
+          ERROR=$(cat error)
+          curl --request POST \
+          --url https://api.github.com/repos/${{ github.repository }}/issues \
+          --header 'authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "title": "Automated issue for commit: ${{ github.job }}",
+            "body": "## Description\n\nThis issue was automatically created by the GitHub Action.\n\nThe Job **`${{github.job}}`** of the workflow run **`${{github.run_number}}`** failed with the following error:\n\n`'"$ERROR"'`\n\n## Run details\n\n- Workflow: `${{ github.workflow }}`\n\n- The actor of the run: `${{ github.triggering_actor }}`\n\n- The commit hash was: _${{ github.sha }}_\n\nKindly fix it in the shortest time possible.\n\nThank you."
+            }' \
+          --fail
+
+      - name: Push images
+        run: |
+          docker push ${{ env.BACKEND_IMAGE }}
+
+  checking-secrets:
+    name: Checking secrets
+    runs-on: ubuntu-latest
+    needs: build
+    outputs:
+      secret_key_exists: ${{steps.check_secrets.outputs.defined}}
+    steps:
+      - name: Check for Secrets availabilities
+        id: check_secrets
+        shell: bash
+        run: |
+          if [[ -n "${{ secrets.PRIVATE_KEY }}" && -n "${{secrets.AWS_EC2_IP_ADDRESS}}" && -n "${{secrets.AWS_HOST_USER}}" ]]; then
+            echo "defined=true" >> $GITHUB_OUTPUT;
+          else
+            echo "defined=false" >> $GITHUB_OUTPUT;
+          fi
+
+  deploy:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+    needs: checking-secrets
+    if: needs.checking-secrets.outputs.secret_key_exists == 'true'
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+
+      - name: Add environment variables to .env
+        run: |
+          echo WEBSITE_IMAGE=${{ env.WEBSITE_IMAGE }} >> .env
+          echo NGINX_IMAGE=${{ env.NGINX_IMAGE }} >> .env
+          echo NAMESPACE=${{ secrets.NAMESPACE }} >> .env
+          echo PERSONAL_ACCESS_TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }} >> .env
+
+      - name: Add the private SSH key to the ssh-agent
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p ~/.ssh
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-add - <<< "${{ secrets.PRIVATE_KEY }}"
+
+      - name: Deploy images on AWS EC2
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
+        run: |
+          scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.AWS_HOST_USER}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
+          ssh -o StrictHostKeyChecking=no ${{secrets.AWS_HOST_USER}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << 'EOF'
+
+              set -a
+              source .env
+              set +a
+
+              docker-compose down --rmi all -v
+              docker login ghcr.io -u ${{secrets.NAMESPACE}} -p ${{secrets.PERSONAL_ACCESS_TOKEN}}
+              docker pull $BACKEND_IMAGE
+              docker-compose --env-file=.env -f docker-compose.prod.yml up -d
+              docker logout
+          EOF

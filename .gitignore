@@ -1,1 +1,3 @@
-./docker/*
+docker/*
+my_aws_file.pem
+.env
