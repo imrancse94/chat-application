@@ -9,7 +9,7 @@ const multer = require('multer');
 const { initializeSocket } = require('./config/socket');
 
 dotenv.config();
-connectDB();
+// connectDB();
 
 const app = express();
 const server = http.createServer(app);
