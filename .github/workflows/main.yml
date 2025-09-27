@@ -6,7 +6,7 @@ on:
 
 env:
   #
-  BACKEND_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/chat-application-backend:latest
+  BACKEND_IMAGE: ghcr.io/$(echo ${{secrets.NAMESPACE}} )/chat-application-backend:latest
   REDIS_HOST: redis
   REDIS_PORT: 6379
   JWT_SECRET: secret@!
@@ -124,7 +124,7 @@ jobs:
 
               docker-compose down --rmi all -v
               docker login ghcr.io -u ${{secrets.NAMESPACE}} -p ${{secrets.PERSONAL_ACCESS_TOKEN}}
-              docker pull $BACKEND_IMAGE
+              docker pull ${{env.BACKEND_IMAGE}}
               docker-compose --env-file=.env -f docker-compose.prod.yml up -d
               docker logout
           EOF
