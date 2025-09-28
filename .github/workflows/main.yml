@@ -129,6 +129,6 @@ jobs:
               docker-compose down --rmi all -v
               docker login ghcr.io -u ${{secrets.NAMESPACE}} -p ${{secrets.PERSONAL_ACCESS_TOKEN}}
               docker pull $BACKEND_IMAGE
-              docker-compose --env-file=.env -f docker-compose.prod.yml up -d
+              docker-compose --env-file=.env -f docker-compose.prod.yml up --build -d
               docker logout
           EOF
