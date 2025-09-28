@@ -1,12 +1,44 @@
 services:
   backend:
     container_name: 'backend'
-    image: 'ghcr.io/imrancse94/chat-application-backend:latest'
+    image: '${BACKEND_IMAGE}'
     ports:
       - "8000:8000"
     networks:
       - chat-network
     restart: always  
+
+  mongo:
+    container_name: 'db'
+    image: mongo:latest
+    volumes:
+      - ./docker/mongodb:/data/db
+    networks:
+      - chat-network
+    restart: always
+
+  redis:
+    container_name: 'redis'
+    image: redis
+    ports:
+      - "27017:27017"
+    networks:
+      - chat-network
+    restart: always
+
+  worker:
+    container_name: 'worker'
+    build: ./backend
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    command: ["node", "worker.js"]
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - chat-network
     
 networks:
   chat-network:

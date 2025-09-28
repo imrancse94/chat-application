@@ -97,9 +97,14 @@ jobs:
 
       - name: Add environment variables to .env
         run: |
-          echo WEBSITE_IMAGE=${{ env.BACKEND_IMAGE }} >> .env
-          echo NAMESPACE=${{ secrets.NAMESPACE }} >> .env
-          echo PERSONAL_ACCESS_TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }} >> .env
+          echo BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
+          echo REDIS_HOST=${{ env.REDIS_HOST }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
+          echo REDIS_PORT=${{ env.REDIS_PORT }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
+          echo JWT_SECRET=${{ env.JWT_SECRET }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
+          echo PORT=${{ env.PORT }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
+          echo JWT_ACCESS_EXPIRATION=${{ env.JWT_ACCESS_EXPIRATION }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
+          echo JWT_REFRESH_EXPIRATION=${{ env.JWT_REFRESH_EXPIRATION }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
+          echo JWT_REFRESH_SECRET=${{ env.JWT_REFRESH_SECRET }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
 
       - name: Add the private SSH key to the ssh-agent
         env:
@@ -115,7 +120,7 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
 
         run: |
-          scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.AWS_HOST_USER}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
+          scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.AWS_HOST_USER}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:/home/${{secrets.AWS_HOST_USER}}/app/
           ssh -o StrictHostKeyChecking=no ${{secrets.AWS_HOST_USER}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << 'EOF'
 
               set -a
