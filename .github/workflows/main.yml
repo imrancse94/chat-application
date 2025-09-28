@@ -6,6 +6,8 @@ on:
 
 env:
   BACKEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/chat-application-backend:latest
+  MONGO_IMAGE: mongo:latest
+  REDIS_IMAGE: redis
   REDIS_HOST: redis
   REDIS_PORT: 6379
   JWT_SECRET: secret@!
@@ -44,6 +46,8 @@ jobs:
       - name: Pull images
         run: |
           docker pull ${{ env.BACKEND_IMAGE }} || true
+          docker pull ${{ env.MONGO_IMAGE }} || true
+          docker pull ${{ env.REDIS_IMAGE }} || true
 
       - name: Build images
         id: build-images
