@@ -28,7 +28,7 @@ services:
 
   worker:
     container_name: 'worker'
-    build: ./backend
+    image: '${BACKEND_IMAGE}'
     environment:
       - MONGO_URI=${MONGO_URI}
       - REDIS_HOST=${REDIS_HOST}
