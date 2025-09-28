@@ -5,8 +5,7 @@ on:
     branches: [main]
 
 env:
-  #
-  BACKEND_IMAGE: ghcr.io/$(echo ${{secrets.NAMESPACE}} )/chat-application-backend:latest
+  BACKEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/chat-application-backend:latest
   REDIS_HOST: redis
   REDIS_PORT: 6379
   JWT_SECRET: secret@!
@@ -22,24 +21,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout main
+      - name: Checkout main
         uses: actions/checkout@v3
 
-      - name: Set environment variables to .env
+      - name: Set environment variables to $GITHUB_ENV
         run: |
-          echo "BACKEND_IMAGE=$(echo ${{env.BACKEND_IMAGE}} )" >> $GITHUB_ENV
-          echo "REDIS_HOST=$(echo ${{env.REDIS_HOST}} )" >> $GITHUB_ENV
-          echo "REDIS_PORT=$(echo ${{env.REDIS_PORT}} )" >> $GITHUB_ENV
-          echo "JWT_SECRET=$(echo ${{env.JWT_SECRET}} )" >> $GITHUB_ENV
-          echo "PORT=$(echo ${{env.PORT}} )" >> $GITHUB_ENV
-          echo "JWT_ACCESS_EXPIRATION=$(echo ${{env.JWT_ACCESS_EXPIRATION}} )" >> $GITHUB_ENV
-          echo "JWT_REFRESH_EXPIRATION=$(echo ${{env.JWT_REFRESH_EXPIRATION}} )" >> $GITHUB_ENV
-          echo "JWT_REFRESH_SECRET=$(echo ${{env.JWT_REFRESH_SECRET}} )" >> $GITHUB_ENV
+          echo "BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}" >> $GITHUB_ENV
+          echo "REDIS_HOST=${{ env.REDIS_HOST }}" >> $GITHUB_ENV
+          echo "REDIS_PORT=${{ env.REDIS_PORT }}" >> $GITHUB_ENV
+          echo "JWT_SECRET=${{ env.JWT_SECRET }}" >> $GITHUB_ENV
+          echo "PORT=${{ env.PORT }}" >> $GITHUB_ENV
+          echo "JWT_ACCESS_EXPIRATION=${{ env.JWT_ACCESS_EXPIRATION }}" >> $GITHUB_ENV
+          echo "JWT_REFRESH_EXPIRATION=${{ env.JWT_REFRESH_EXPIRATION }}" >> $GITHUB_ENV
+          echo "JWT_REFRESH_SECRET=${{ env.JWT_REFRESH_SECRET }}" >> $GITHUB_ENV
 
       - name: Log in to GitHub Packages
         env:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        run: echo ${PERSONAL_ACCESS_TOKEN} | docker login ghcr.io -u ${{ secrets.NAMESPACE }} --password-stdin
+        run: echo "${PERSONAL_ACCESS_TOKEN}" | docker login ghcr.io -u ${{ secrets.NAMESPACE }} --password-stdin
 
       - name: Pull images
         run: |
@@ -50,10 +49,9 @@ jobs:
         run: |
           docker compose -f docker-compose.ci.yml build --no-cache 2>error >&1
 
-      - name: create an issue
+      - name: Create an issue on failure
         if: ${{ failure() }}
         run: |
-          echo $(cat error)
           ERROR=$(cat error)
           curl --request POST \
           --url https://api.github.com/repos/${{ github.repository }}/issues \
@@ -76,7 +74,7 @@ jobs:
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
     steps:
-      - name: Check for Secrets availabilities
+      - name: Check for Secrets availability
         id: check_secrets
         shell: bash
         run: |
@@ -95,16 +93,17 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v3
 
-      - name: Add environment variables to .env
+      - name: Create .env file locally in app folder
         run: |
-          echo BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
-          echo REDIS_HOST=${{ env.REDIS_HOST }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
-          echo REDIS_PORT=${{ env.REDIS_PORT }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
-          echo JWT_SECRET=${{ env.JWT_SECRET }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
-          echo PORT=${{ env.PORT }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
-          echo JWT_ACCESS_EXPIRATION=${{ env.JWT_ACCESS_EXPIRATION }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
-          echo JWT_REFRESH_EXPIRATION=${{ env.JWT_REFRESH_EXPIRATION }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
-          echo JWT_REFRESH_SECRET=${{ env.JWT_REFRESH_SECRET }} >> /home/${{secrets.AWS_HOST_USER}}/app/.env
+          mkdir -p app
+          echo "BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}" >> app/.env
+          echo "REDIS_HOST=${{ env.REDIS_HOST }}" >> app/.env
+          echo "REDIS_PORT=${{ env.REDIS_PORT }}" >> app/.env
+          echo "JWT_SECRET=${{ env.JWT_SECRET }}" >> app/.env
+          echo "PORT=${{ env.PORT }}" >> app/.env
+          echo "JWT_ACCESS_EXPIRATION=${{ env.JWT_ACCESS_EXPIRATION }}" >> app/.env
+          echo "JWT_REFRESH_EXPIRATION=${{ env.JWT_REFRESH_EXPIRATION }}" >> app/.env
+          echo "JWT_REFRESH_SECRET=${{ env.JWT_REFRESH_SECRET }}" >> app/.env
 
       - name: Add the private SSH key to the ssh-agent
         env:
@@ -118,18 +117,18 @@ jobs:
       - name: Deploy images on AWS EC2
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-
         run: |
-          scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.AWS_HOST_USER}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:/home/${{secrets.AWS_HOST_USER}}/app/
+          scp -o StrictHostKeyChecking=no -r ./app/.env ./docker-compose.prod.yml \
+            ${{secrets.AWS_HOST_USER}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:/home/${{secrets.AWS_HOST_USER}}/app/
           ssh -o StrictHostKeyChecking=no ${{secrets.AWS_HOST_USER}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << 'EOF'
-
+              cd ~/app
               set -a
               source .env
               set +a
 
               docker-compose down --rmi all -v
               docker login ghcr.io -u ${{secrets.NAMESPACE}} -p ${{secrets.PERSONAL_ACCESS_TOKEN}}
-              docker pull ${{env.BACKEND_IMAGE}}
+              docker pull $BACKEND_IMAGE
               docker-compose --env-file=.env -f docker-compose.prod.yml up -d
               docker logout
           EOF
