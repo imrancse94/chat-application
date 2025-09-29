@@ -6,6 +6,7 @@ on:
 
 env:
   BACKEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/chat-application-backend:latest
+  FRONTEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/frontend:latest
   MONGO_IMAGE: mongo:latest
   REDIS_IMAGE: redis
   REDIS_HOST: redis
@@ -29,6 +30,7 @@ jobs:
 
       - name: Set environment variables to $GITHUB_ENV
         run: |
+          echo "FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}" >> $GITHUB_ENV
           echo "BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}" >> $GITHUB_ENV
           echo "REDIS_HOST=${{ env.REDIS_HOST }}" >> $GITHUB_ENV
           echo "REDIS_PORT=${{ env.REDIS_PORT }}" >> $GITHUB_ENV
@@ -49,6 +51,7 @@ jobs:
           docker pull ${{ env.BACKEND_IMAGE }} || true
           docker pull ${{ env.MONGO_IMAGE }} || true
           docker pull ${{ env.REDIS_IMAGE }} || true
+          docker pull ${{ env.FRONTEND_IMAGE }} || true
 
       - name: Build images
         id: build-images
@@ -71,7 +74,8 @@ jobs:
 
       - name: Push images
         run: |
-          docker push ${{ env.BACKEND_IMAGE }}
+          docker push ${{ env.BACKEND_IMAGE }} || true
+          docker push ${{ env.FRONTEND_IMAGE }} || true
 
   checking-secrets:
     name: Checking secrets
