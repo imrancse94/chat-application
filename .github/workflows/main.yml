@@ -6,7 +6,7 @@ on:
 
 env:
   BACKEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/chat-application-backend:latest
-  FRONTEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/frontend:latest
+  FRONTEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/frontend:latest@sha256:1c2d72a64451e050772730bc0f2445b484ab4ba01ec69dcb10d10843ede2d6a1
   MONGO_IMAGE: mongo:latest
   REDIS_IMAGE: redis
   REDIS_HOST: redis
