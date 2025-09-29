@@ -2,6 +2,10 @@ services:
   backend:
     container_name: 'backend'
     image: '${BACKEND_IMAGE}'
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
     ports:
       - "8000:8000"
     networks:
