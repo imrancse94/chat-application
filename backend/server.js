@@ -11,6 +11,7 @@ const { initializeSocket } = require('./config/socket');
 dotenv.config();
 connectDB();
 
+
 const app = express();
 const server = http.createServer(app);
 
