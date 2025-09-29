@@ -2,10 +2,8 @@ services:
   backend:
     container_name: 'backend'
     image: '${BACKEND_IMAGE}'
-    environment:
-      - MONGO_URI=${MONGO_URI}
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     networks:
@@ -33,10 +31,8 @@ services:
   worker:
     container_name: 'worker'
     image: '${BACKEND_IMAGE}'
-    environment:
-      - MONGO_URI=${MONGO_URI}
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
+    env_file:
+      - .env
     command: ["node", "worker.js"]
     depends_on:
       - mongo
