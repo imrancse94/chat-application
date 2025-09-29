@@ -42,9 +42,7 @@ services:
   
   frontend:
     container_name: 'frontend'
-    build: ./frontend
-    env_file:
-      - frontend/.env
+    image: '${FRONTEND_IMAGE}'
     ports:
       - "3000:3000"
     depends_on:
