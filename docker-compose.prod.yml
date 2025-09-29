@@ -52,8 +52,6 @@ services:
       - mongo
       - redis
       - worker
-    volumes:
-      - frontend:/frontend/dist/
     networks:
       - chat-network
     restart: always
