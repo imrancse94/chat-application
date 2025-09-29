@@ -140,10 +140,6 @@ jobs:
 
               docker rm -v -f $(docker ps -qa) || true
               docker login ghcr.io -u ${{secrets.NAMESPACE}} -p ${{secrets.PERSONAL_ACCESS_TOKEN}}
-              docker pull $BACKEND_IMAGE
-              docker pull mongo:latest
-              docker pull redis
-              docker pull $FRONTEND_IMAGE
               docker-compose --env-file=.env -f docker-compose.prod.yml up --build -d
               docker logout
           EOF
