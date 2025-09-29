@@ -37,6 +37,7 @@ jobs:
           echo "JWT_ACCESS_EXPIRATION=${{ env.JWT_ACCESS_EXPIRATION }}" >> $GITHUB_ENV
           echo "JWT_REFRESH_EXPIRATION=${{ env.JWT_REFRESH_EXPIRATION }}" >> $GITHUB_ENV
           echo "JWT_REFRESH_SECRET=${{ env.JWT_REFRESH_SECRET }}" >> $GITHUB_ENV
+          echo "MONGO_URI=${{ env.MONGO_URI }}" >> $GITHUB_ENV
 
       - name: Log in to GitHub Packages
         env:
