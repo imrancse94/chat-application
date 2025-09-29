@@ -106,6 +106,7 @@ jobs:
       - name: Create .env file locally in app folder
         run: |
           mkdir -p app
+          echo "FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}" >> app/.env
           echo "BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}" >> app/.env
           echo "REDIS_HOST=${{ env.REDIS_HOST }}" >> app/.env
           echo "REDIS_PORT=${{ env.REDIS_PORT }}" >> app/.env
@@ -142,6 +143,7 @@ jobs:
               docker pull $BACKEND_IMAGE
               docker pull mongo:latest
               docker pull redis
+              docker pull $FRONTEND_IMAGE
               docker-compose --env-file=.env -f docker-compose.prod.yml up --build -d
               docker logout
           EOF
