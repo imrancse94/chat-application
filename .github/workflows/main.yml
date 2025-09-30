@@ -7,6 +7,7 @@ on:
 env:
   BACKEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/chat-application-backend:latest
   FRONTEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/frontend:latest@sha256:1c2d72a64451e050772730bc0f2445b484ab4ba01ec69dcb10d10843ede2d6a1
+  FRONTEND_PUSH_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/frontend:latest
   MONGO_IMAGE: mongo:latest
   REDIS_IMAGE: redis
   REDIS_HOST: redis
@@ -75,7 +76,8 @@ jobs:
       - name: Push images
         run: |
           docker push ${{ env.BACKEND_IMAGE }} || true
-          docker push ${{ env.FRONTEND_IMAGE }} || true
+          docker push ${{ env.FRONTEND_PUSH_IMAGE }} || true
+          
 
   checking-secrets:
     name: Checking secrets
@@ -142,7 +144,7 @@ jobs:
               docker login ghcr.io -u ${{secrets.NAMESPACE}} -p ${{secrets.PERSONAL_ACCESS_TOKEN}}
               docker pull $BACKEND_IMAGE
               docker pull mongo:latest
-              docker pull nginx:stable-alpine
+              docker pull nginx:latest
               docker pull redis
               docker pull $FRONTEND_IMAGE
               docker-compose --env-file=.env -f docker-compose.prod.yml up --build -d
