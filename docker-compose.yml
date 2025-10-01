@@ -70,7 +70,7 @@ services:
 
   nginx:
     container_name: 'nginx'
-    image: nginx:latest
+    image: nginx
     depends_on:
       - frontend
     volumes:
