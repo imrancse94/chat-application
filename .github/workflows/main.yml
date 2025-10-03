@@ -58,7 +58,7 @@ jobs:
       - name: Build images
         id: build-images
         run: |
-          docker compose -f docker-compose.ci.yml build --no-cache --platform linux/amd64 2>error >&1
+          docker compose -f docker-compose.ci.yml build --no-cache 2>error >&1
 
       - name: Create an issue on failure
         if: ${{ failure() }}
