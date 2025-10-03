@@ -77,7 +77,7 @@ jobs:
       - name: Push images
         run: |
           docker push ${{ env.BACKEND_IMAGE }} || true
-          docker push ${{ env.FRONTEND_PUSH_IMAGE }} || true
+          docker push ${{ env.FRONTEND_IMAGE }} || true
           
 
   checking-secrets:
