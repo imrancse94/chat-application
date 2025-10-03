@@ -58,6 +58,7 @@ services:
     
   frontend:
     container_name: 'frontend'
+    platform: linux/amd64
     image: '${FRONTEND_IMAGE}'
     env_file:
       - .env
