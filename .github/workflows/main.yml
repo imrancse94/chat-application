@@ -6,8 +6,8 @@ on:
 
 env:
   BACKEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/chat-application-backend:latest
-  FRONTEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/ghcr.io/imrancse94/chat-application-frontend:latest
-  FRONTEND_PUSH_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/ghcr.io/imrancse94/chat-application-frontend:latest
+  FRONTEND_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/chat-application-frontend:latest
+  FRONTEND_PUSH_IMAGE: ghcr.io/${{ secrets.NAMESPACE }}/chat-application-frontend:latest
   MONGO_IMAGE: mongo:latest
   REDIS_IMAGE: redis
   REDIS_HOST: redis
