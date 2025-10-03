@@ -54,7 +54,7 @@ services:
   
   frontend:
     container_name: 'frontend'
-    platform: linux/amd64
+    platform: linux/arm64
     build: ./frontend
     ports:
       - "3000:3000"
