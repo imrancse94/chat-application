@@ -58,32 +58,21 @@ services:
     
   frontend:
     container_name: 'frontend'
-    image: '${FRONTEND_IMAGE}'
-    env_file:
-      - .env
+    build: ./frontend
     ports:
-      - "3000:3000"
+      - "80:80"
     depends_on:
       - backend
       - mongo
       - redis
       - worker
+    volumes:
+      - ./frontend:/frontend/dist/
     networks:
       - chat-network
     restart: always
 
-  nginx:
-    container_name: 'nginx'
-    image: nginx
-    depends_on:
-      - frontend
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html/
-    ports:
-      - '80:80'
-    restart: always
-    networks:
-      - chat-network
+ 
   
 networks:
   chat-network:
