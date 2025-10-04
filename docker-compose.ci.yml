@@ -58,6 +58,7 @@ services:
     
   frontend:
     container_name: 'frontend'
+    build: ./frontend
     cache_from:
           - '${FRONTEND_IMAGE}'
     image: '${FRONTEND_IMAGE}'
