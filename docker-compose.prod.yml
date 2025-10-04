@@ -42,7 +42,7 @@ services:
   
   frontend:
     container_name: 'frontend'
-    build: ./frontend
+    image: '${FRONTEND_IMAGE}'
     ports:
       - "80:80"
     depends_on:
