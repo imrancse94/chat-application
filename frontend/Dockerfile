@@ -36,7 +36,7 @@ RUN mkdir -p /etc/ssl/private /etc/ssl/certs && \
     rm -f /tmp/openssl.cnf
 
 # Copy nginx config
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/chat-app.conf
 
 # Expose ports
 EXPOSE 80 443
