@@ -9,7 +9,7 @@ RUN npm run build
 # Stage 2: Serve with Nginx + Self-Signed SSL
 FROM nginx:alpine
 
-# Install OpenSSL
+# Install OpenSSL and bash (for flexibility)
 RUN apk add --no-cache openssl bash
 
 # Copy built app
@@ -17,11 +17,14 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 # Environment variable for IP (set during build)
 ARG SERVER_IP
-ENV SERVER_IP=51.21.152.103
+ENV SERVER_IP=${SERVER_IP:-51.21.152.103}
 
 # Generate self-signed certificate with IP in SAN
 RUN mkdir -p /etc/ssl/private /etc/ssl/certs && \
-    echo "subjectAltName = IP:${SERVER_IP}" > /tmp/ssl_ext.cnf && \
+    echo "[req]" > /tmp/openssl.cnf && \
+    echo "distinguished_name=req" >> /tmp/openssl.cnf && \
+    echo "[v3_req]" >> /tmp/openssl.cnf && \
+    echo "subjectAltName=IP:${SERVER_IP}" >> /tmp/openssl.cnf && \
     openssl req -x509 -nodes -newkey rsa:2048 \
       -keyout /etc/ssl/private/nginx-selfsigned.key \
       -out /etc/ssl/certs/nginx-selfsigned.crt \
@@ -29,10 +32,14 @@ RUN mkdir -p /etc/ssl/private /etc/ssl/certs && \
       -extensions v3_req \
       -sha256 \
       -days 365 \
-      -config <(cat /etc/ssl/openssl.cnf; echo "[v3_req]"; echo "subjectAltName = IP:${SERVER_IP}")
+      -config /tmp/openssl.cnf && \
+    rm -f /tmp/openssl.cnf
 
 # Copy nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# Expose ports
 EXPOSE 80 443
+
+# Run nginx
 CMD ["nginx", "-g", "daemon off;"]
