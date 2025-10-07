@@ -15,20 +15,20 @@ RUN apk add --no-cache openssl bash
 # Copy built app
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Environment variable for IP (set during build)
-ARG SERVER_IP
-ENV SERVER_IP=${SERVER_IP:-ec2-51-21-152-103.eu-north-1.compute.amazonaws.com}
+# Environment variable for your server DNS name (not IP)
+ARG SERVER_DNS
+ENV SERVER_DNS=${SERVER_DNS:-ec2-51-21-152-103.eu-north-1.compute.amazonaws.com}
 
-# Generate self-signed certificate with IP in SAN
+# Generate self-signed certificate with DNS in SAN
 RUN mkdir -p /etc/ssl/private /etc/ssl/certs && \
     echo "[req]" > /tmp/openssl.cnf && \
     echo "distinguished_name=req" >> /tmp/openssl.cnf && \
     echo "[v3_req]" >> /tmp/openssl.cnf && \
-    echo "subjectAltName=IP:${SERVER_IP}" >> /tmp/openssl.cnf && \
+    echo "subjectAltName=DNS:${SERVER_DNS}" >> /tmp/openssl.cnf && \
     openssl req -x509 -nodes -newkey rsa:2048 \
       -keyout /etc/ssl/private/nginx-selfsigned.key \
       -out /etc/ssl/certs/nginx-selfsigned.crt \
-      -subj "/C=US/ST=NA/L=NA/O=SelfSigned/CN=${SERVER_IP}" \
+      -subj "/C=US/ST=NA/L=NA/O=SelfSigned/CN=${SERVER_DNS}" \
       -extensions v3_req \
       -sha256 \
       -days 365 \
