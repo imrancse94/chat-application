@@ -17,7 +17,7 @@ env:
   JWT_ACCESS_EXPIRATION: 15m
   JWT_REFRESH_EXPIRATION: 7d
   JWT_REFRESH_SECRET: scret222!!
-  MONGO_URI: mongodb://mongo:27017/chatapp
+  MONGO_URI: mongodb+srv://ihossainvantage_db_user:e8nqBVkuHQCLZFnr@cluster0.as8bhc6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
   REGISTRY: ghcr.io
 
 jobs:

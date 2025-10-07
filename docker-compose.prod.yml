@@ -10,15 +10,6 @@ services:
       - chat-network
     restart: always  
 
-  mongo:
-    container_name: 'db'
-    image: mongo:latest
-    volumes:
-      - ./docker/mongodb:/data/db
-    networks:
-      - chat-network
-    restart: always
-
   redis:
     container_name: 'redis'
     image: redis
