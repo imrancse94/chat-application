@@ -58,7 +58,12 @@ services:
     
   frontend:
     container_name: 'frontend'
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      cache_from:
+          - '${FRONTEND_IMAGE}'
+    image: '${FRONTEND_IMAGE}'
     ports:
       - "80:80"
       - "443:443"
