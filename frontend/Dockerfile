@@ -17,7 +17,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 # Environment variable for IP (set during build)
 ARG SERVER_IP
-ENV SERVER_IP=${SERVER_IP}
+ENV SERVER_IP=51.21.152.103
 
 # Generate self-signed certificate with IP in SAN
 RUN mkdir -p /etc/ssl/private /etc/ssl/certs && \
