@@ -18,7 +18,6 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - mongo
       - redis
     networks:
       - chat-network
@@ -42,7 +41,6 @@ services:
       - REDIS_PORT=${REDIS_PORT}
     command: ["node", "worker.js"]
     depends_on:
-      - mongo
       - redis
     networks:
       - chat-network
@@ -60,7 +58,6 @@ services:
       - "443:443"
     depends_on:
       - backend
-      - mongo
       - redis
       - worker
     volumes:

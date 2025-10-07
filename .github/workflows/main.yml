@@ -50,7 +50,6 @@ jobs:
       - name: Pull images
         run: |
           docker pull ${{ env.BACKEND_IMAGE }} || true
-          docker pull ${{ env.MONGO_IMAGE }} || true
           docker pull ${{ env.REDIS_IMAGE }} || true
           docker pull ${{ env.FRONTEND_IMAGE }} || true
 

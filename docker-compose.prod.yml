@@ -26,7 +26,6 @@ services:
       - .env
     command: ["node", "worker.js"]
     depends_on:
-      - mongo
       - redis
     networks:
       - chat-network
@@ -39,7 +38,6 @@ services:
       - "443:443"
     depends_on:
       - backend
-      - mongo
       - redis
       - worker
     volumes:
